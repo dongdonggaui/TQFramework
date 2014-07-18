@@ -1,0 +1,7 @@
+platform :ios, '6.0'
+pod 'AFNetworking', '~> 2.3.1'
+pod 'NSLogger', '~> 1.2'
+pod 'MMProgressHUD', '~> 0.2.2'
+pod 'UIColor-Hex', '~> 0.1.1'
+pod 'UIImage+ImageWithColor', '~> 1'
+pod 'pop', '~> 1.0.6'
