@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		065E05EC197BBA0100F77D82 /* HLYImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 065E05E5197BBA0000F77D82 /* HLYImageCache.m */; };
+		065E05ED197BBA0100F77D82 /* UIImage+Convenience.m in Sources */ = {isa = PBXBuildFile; fileRef = 065E05E7197BBA0100F77D82 /* UIImage+Convenience.m */; };
+		065E05EE197BBA0100F77D82 /* UIImageView+Network.m in Sources */ = {isa = PBXBuildFile; fileRef = 065E05E9197BBA0100F77D82 /* UIImageView+Network.m */; };
+		065E05EF197BBA0100F77D82 /* UITableViewCell+Null.m in Sources */ = {isa = PBXBuildFile; fileRef = 065E05EB197BBA0100F77D82 /* UITableViewCell+Null.m */; };
+		065E05F6197BBA4600F77D82 /* NSTimer+Addition.m in Sources */ = {isa = PBXBuildFile; fileRef = 065E05F1197BBA4600F77D82 /* NSTimer+Addition.m */; };
+		065E05F7197BBA4600F77D82 /* UIDevice-Hardware.m in Sources */ = {isa = PBXBuildFile; fileRef = 065E05F3197BBA4600F77D82 /* UIDevice-Hardware.m */; };
+		065E05F8197BBA4600F77D82 /* UIImage+ScaleImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 065E05F5197BBA4600F77D82 /* UIImage+ScaleImage.m */; };
+		065E05FC197BBB2800F77D82 /* HLYViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 065E05FB197BBB2800F77D82 /* HLYViewController.m */; };
+		065E05FF197BBB5500F77D82 /* HLYShareViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 065E05FE197BBB5500F77D82 /* HLYShareViewController.m */; };
 		098096391978B95400631808 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 098096381978B95400631808 /* Foundation.framework */; };
 		0980963B1978B95400631808 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0980963A1978B95400631808 /* CoreGraphics.framework */; };
 		0980963D1978B95400631808 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0980963C1978B95400631808 /* UIKit.framework */; };
@@ -36,6 +45,24 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		065E05E4197BBA0000F77D82 /* HLYImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HLYImageCache.h; sourceTree = "<group>"; };
+		065E05E5197BBA0000F77D82 /* HLYImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HLYImageCache.m; sourceTree = "<group>"; };
+		065E05E6197BBA0000F77D82 /* UIImage+Convenience.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Convenience.h"; sourceTree = "<group>"; };
+		065E05E7197BBA0100F77D82 /* UIImage+Convenience.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Convenience.m"; sourceTree = "<group>"; };
+		065E05E8197BBA0100F77D82 /* UIImageView+Network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImageView+Network.h"; sourceTree = "<group>"; };
+		065E05E9197BBA0100F77D82 /* UIImageView+Network.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+Network.m"; sourceTree = "<group>"; };
+		065E05EA197BBA0100F77D82 /* UITableViewCell+Null.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITableViewCell+Null.h"; sourceTree = "<group>"; };
+		065E05EB197BBA0100F77D82 /* UITableViewCell+Null.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITableViewCell+Null.m"; sourceTree = "<group>"; };
+		065E05F0197BBA4600F77D82 /* NSTimer+Addition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTimer+Addition.h"; sourceTree = "<group>"; };
+		065E05F1197BBA4600F77D82 /* NSTimer+Addition.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTimer+Addition.m"; sourceTree = "<group>"; };
+		065E05F2197BBA4600F77D82 /* UIDevice-Hardware.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIDevice-Hardware.h"; sourceTree = "<group>"; };
+		065E05F3197BBA4600F77D82 /* UIDevice-Hardware.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIDevice-Hardware.m"; sourceTree = "<group>"; };
+		065E05F4197BBA4600F77D82 /* UIImage+ScaleImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+ScaleImage.h"; sourceTree = "<group>"; };
+		065E05F5197BBA4600F77D82 /* UIImage+ScaleImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+ScaleImage.m"; sourceTree = "<group>"; };
+		065E05FA197BBB2800F77D82 /* HLYViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HLYViewController.h; sourceTree = "<group>"; };
+		065E05FB197BBB2800F77D82 /* HLYViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HLYViewController.m; sourceTree = "<group>"; };
+		065E05FD197BBB5500F77D82 /* HLYShareViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HLYShareViewController.h; sourceTree = "<group>"; };
+		065E05FE197BBB5500F77D82 /* HLYShareViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HLYShareViewController.m; sourceTree = "<group>"; };
 		076E00F110854E978FAF8FEB /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		098096351978B95400631808 /* TQFramework.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TQFramework.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		098096381978B95400631808 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -87,6 +114,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		065E05F9197BBB1A00F77D82 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				065E05FA197BBB2800F77D82 /* HLYViewController.h */,
+				065E05FB197BBB2800F77D82 /* HLYViewController.m */,
+				065E05FD197BBB5500F77D82 /* HLYShareViewController.h */,
+				065E05FE197BBB5500F77D82 /* HLYShareViewController.m */,
+			);
+			name = ViewControllers;
+			sourceTree = "<group>";
+		};
 		0980962C1978B95400631808 = {
 			isa = PBXGroup;
 			children = (
@@ -124,6 +162,7 @@
 			children = (
 				098096471978B95400631808 /* HLYAppDelegate.h */,
 				098096481978B95400631808 /* HLYAppDelegate.m */,
+				065E05F9197BBB1A00F77D82 /* ViewControllers */,
 				09EFF9A41978F11E009B7E77 /* Categories */,
 				0980964A1978B95400631808 /* Images.xcassets */,
 				0980963F1978B95400631808 /* Supporting Files */,
@@ -163,6 +202,20 @@
 		09EFF9A41978F11E009B7E77 /* Categories */ = {
 			isa = PBXGroup;
 			children = (
+				065E05E4197BBA0000F77D82 /* HLYImageCache.h */,
+				065E05E5197BBA0000F77D82 /* HLYImageCache.m */,
+				065E05F0197BBA4600F77D82 /* NSTimer+Addition.h */,
+				065E05F1197BBA4600F77D82 /* NSTimer+Addition.m */,
+				065E05F2197BBA4600F77D82 /* UIDevice-Hardware.h */,
+				065E05F3197BBA4600F77D82 /* UIDevice-Hardware.m */,
+				065E05F4197BBA4600F77D82 /* UIImage+ScaleImage.h */,
+				065E05F5197BBA4600F77D82 /* UIImage+ScaleImage.m */,
+				065E05E6197BBA0000F77D82 /* UIImage+Convenience.h */,
+				065E05E7197BBA0100F77D82 /* UIImage+Convenience.m */,
+				065E05E8197BBA0100F77D82 /* UIImageView+Network.h */,
+				065E05E9197BBA0100F77D82 /* UIImageView+Network.m */,
+				065E05EA197BBA0100F77D82 /* UITableViewCell+Null.h */,
+				065E05EB197BBA0100F77D82 /* UITableViewCell+Null.m */,
 				09EFF9A51978F138009B7E77 /* NSDate+Display.h */,
 				09EFF9A61978F138009B7E77 /* NSDate+Display.m */,
 				09EFF9A71978F138009B7E77 /* NSString+Encrypt.h */,
@@ -305,9 +358,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				098096491978B95400631808 /* HLYAppDelegate.m in Sources */,
+				065E05EF197BBA0100F77D82 /* UITableViewCell+Null.m in Sources */,
+				065E05EE197BBA0100F77D82 /* UIImageView+Network.m in Sources */,
 				09EFF9AC1978F138009B7E77 /* NSString+Encrypt.m in Sources */,
+				065E05EC197BBA0100F77D82 /* HLYImageCache.m in Sources */,
+				065E05FC197BBB2800F77D82 /* HLYViewController.m in Sources */,
+				065E05FF197BBB5500F77D82 /* HLYShareViewController.m in Sources */,
+				065E05F7197BBA4600F77D82 /* UIDevice-Hardware.m in Sources */,
+				065E05ED197BBA0100F77D82 /* UIImage+Convenience.m in Sources */,
 				098096451978B95400631808 /* main.m in Sources */,
 				09EFF9AD1978F138009B7E77 /* UIView+Frame.m in Sources */,
+				065E05F6197BBA4600F77D82 /* NSTimer+Addition.m in Sources */,
+				065E05F8197BBA4600F77D82 /* UIImage+ScaleImage.m in Sources */,
 				09EFF9AB1978F138009B7E77 /* NSDate+Display.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
