@@ -1,0 +1,12 @@
+/* 
+  HLYPullToRefreshManager.strings
+  HLYPullToRefreshManager
+
+  Created by huangluyang on 14-8-24.
+  Copyright (c) 2014年 huangluyang. All rights reserved.
+*/
+"msg_pulltorefresh" = "下拉刷新";
+"msg_releasetorefresh" = "释放刷新";
+"msg_loading" = "加载中";
+"msg_pulltoloadmore" = "上拉加载更多";
+"msg_releasetoloadmore" = "释放加载更多";
