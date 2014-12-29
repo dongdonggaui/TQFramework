@@ -1,0 +1,27 @@
+//
+//  TQTextGridView.h
+//  Hiweido
+//
+//  Created by huangluyang on 14/11/16.
+//  Copyright (c) 2014年 huangluyang. All rights reserved.
+//
+
+#import "TQGridView.h"
+
+@interface TQTextGridView : TQGridView
+
+@property (nonatomic, strong) NSArray *texts;
+
+@end
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
+
+@interface TQTextGridContentView : TQGridViewContentView
+
+@property (nonatomic, strong) UILabel *textLabel;
+
+- (void)prepareForResuse;
+
+@end

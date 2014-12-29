@@ -6,9 +6,7 @@
 //  Copyright (c) 2014年 whu. All rights reserved.
 //
 
-#import "HLYViewController.h"
-
-@interface HLYShareViewController : HLYViewController
+@interface HLYShareViewController : UIViewController
 
 - (instancetype)initWithText:(NSString *)text image:(UIImage *)image;
 

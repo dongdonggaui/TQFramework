@@ -7,6 +7,8 @@
 //
 
 #import "TQShareActionSheet.h"
+#import "UIView+Frame.h"
+#import <UIColor+Hex.h>
 
 @interface TQShareActionSheet ()
 
@@ -30,7 +32,7 @@
         
         _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
         _titleLabel.text = title;
-        _titleLabel.textColor = UIColorFromRGB(0x666666);
+        _titleLabel.textColor = [UIColor colorWithHex:0x666666];
         _titleLabel.font = [UIFont systemFontOfSize:16];
         _titleLabel.backgroundColor = [UIColor clearColor];
         [self addSubview:_titleLabel];
@@ -41,7 +43,7 @@
         
         _cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [_cancelButton setTitle:cancelButtonTitle forState:UIControlStateNormal];
-        [_cancelButton setTitleColor:UIColorFromRGB(0xfe8f3f) forState:UIControlStateNormal];
+        [_cancelButton setTitleColor:[UIColor colorWithHex:0xfe8f3f] forState:UIControlStateNormal];
         [_cancelButton addTarget:self action:@selector(sas_cancelButtonDidTapped:) forControlEvents:UIControlEventTouchUpInside];
         _cancelButton.titleLabel.font = [UIFont systemFontOfSize:18];
         [self addSubview:_cancelButton];
@@ -76,42 +78,42 @@
     
     self.maskView.frame = window.bounds;
     
-    self.width = window.width;
+    [self hly_setWidth:[window hly_width]];
     
     [self.titleLabel sizeToFit];
-    self.titleLabel.top = 15;
-    self.titleLabel.centerX = ceilf(self.width / 2);
+    [self.titleLabel hly_setTop:15];
+    [self.titleLabel hly_setCenterX:ceilf([self hly_width] / 2)];
     
-    self.scrollView.width = self.width;
-    self.scrollView.top = self.titleLabel.bottom + 25;
-    self.scrollView.left = 0;
-    self.scrollView.height = 78.5;
+    [self.scrollView hly_setWidth:[self hly_width]];
+    [self.scrollView hly_setTop:[self.titleLabel hly_bottom] + 25];
+    [self.scrollView hly_setLeft:0];
+    [self.scrollView hly_setHeight:78.5];
     
     CGFloat currentLeft = 5;
     CGFloat itemWidth = 75;
-    CGFloat itemHeight = self.scrollView.height;
+    CGFloat itemHeight = [self.scrollView hly_height];
     for (int i  = 0; i < self.items.count; i++) {
         TQShareActionSheetItem *item = [self.items objectAtIndex:i];
         
-        item.left = currentLeft;
-        item.top = 0;
-        item.width = itemWidth;
-        item.height = itemHeight;
+        [item hly_setLeft:currentLeft];
+        [item hly_setTop:0];
+        [item hly_setWidth:itemWidth];
+        [item hly_setHeight:itemHeight];
         
         currentLeft += itemHeight;
     }
     
-    self.scrollView.contentSize = CGSizeMake(MAX(currentLeft, self.scrollView.width), self.scrollView.height);
+    self.scrollView.contentSize = CGSizeMake(MAX(currentLeft, [self.scrollView hly_width]), [self.scrollView hly_height]);
     
-    self.separateLine.height = 0.5;
-    self.separateLine.width = self.width;
-    self.separateLine.top = self.scrollView.bottom + 30;
+    [self.separateLine hly_setHeight:0.5];
+    [self.separateLine hly_setWidth:[self hly_width]];
+    [self.separateLine hly_setTop:[self.scrollView hly_bottom] + 30];
     
-    self.cancelButton.top = self.separateLine.bottom;
-    self.cancelButton.width = self.width;
-    self.cancelButton.height = 50;
+    [self.cancelButton hly_setTop:[self.separateLine hly_bottom]];
+    [self.cancelButton hly_setWidth:[self hly_width]];
+    [self.cancelButton hly_setHeight:50];
     
-    self.height = self.cancelButton.bottom;
+    [self hly_setHeight:[self.cancelButton hly_bottom]];
 }
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
@@ -152,7 +154,7 @@
     }
     
     self.maskView.alpha = 0;
-    self.top = window.height;
+    [self hly_setTop:[window hly_height]];
     self.alpha = 0;
     
     [window addSubview:self.maskView];
@@ -163,7 +165,7 @@
     
     [UIView animateWithDuration:0.25 animations:^{
         self.maskView.alpha = 1;
-        self.bottom = window.height;
+        [self hly_setBottom:[window hly_height]];
         self.alpha = 1;
     }];
 }
@@ -185,7 +187,7 @@
     
     [UIView animateWithDuration:0.25 animations:^{
         self.maskView.alpha = 0;
-        self.top = window.height;
+        [self hly_setTop:[window hly_height]];
         self.alpha = 0;
     } completion:^(BOOL finished) {
         [self.maskView removeFromSuperview];
@@ -252,7 +254,7 @@
     }
     
     item.titleColorNormal = [UIColor grayColor];
-    item.titleColorSelected = UIColorFromRGB(0xff7e00);
+    item.titleColorSelected = [UIColor colorWithHex:0xff7e00];
     
     [item setTitleColor:item.titleColorNormal forState:UIControlStateNormal];
     [item setTitleColor:item.titleColorSelected forState:UIControlStateSelected];
@@ -281,19 +283,19 @@
 {
     [super layoutSubviews];
     
-    CGFloat centerX = ceilf(self.width / 2);
+    CGFloat centerX = ceilf([self hly_width] / 2);
     CGFloat currentTop = 0;
     [self.titleLabel sizeToFit];
-    self.titleLabel.centerX = centerX;
+    [self.titleLabel hly_setCenterX:centerX];
     
     if (self.imageView.image) {
         [self.imageView sizeToFit];
-        self.imageView.centerX = centerX;
-        self.imageView.top = currentTop;
-        currentTop += self.imageView.height + 9;
+        [self.imageView hly_setCenterX:centerX];
+        [self.imageView hly_setTop:currentTop];
+        currentTop += [self.imageView hly_height] + 9;
     }
     
-    self.titleLabel.top = currentTop;
+    [self.titleLabel hly_setTop:currentTop];
 }
 
 #pragma mark -

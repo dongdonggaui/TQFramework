@@ -14,16 +14,32 @@
 #import "WeiboSDK.h"
 #import "AFNetworking.h"
 
-static NSString * const TQShareManagerTencentAppId = @"1102291319";
-static NSString * const TQShareManagerTencentAppSecret = @"I8MZSf39B9CRykmd";
+static NSString * const TQShareManagerTencentAppId = @"1101744301";
+static NSString * const TQShareManagerTencentAppSecret = @"cKbF1l9UzLa6ZMfP";
+
+static NSString * const TQShareManagerWeixinAppId = @"wx60486d8ced1ed29e";
+//static NSString * const TQShareManagerWeixinAppSecret = @"88fe49805ccb20928a2f81ed11b21ed0";
 
 static NSString * const TQShareManagerWeiboShareUrl = @"https://upload.api.weibo.com/2/statuses/upload.json";
-static NSString * const TQShareManagerWeiboAppId = @"118076031";
-static NSString * const TQShareManagerWeiboAppSecret = @"33cc43b466fee9f0dfd34fd910a4b97d";
-static NSString * const TQShareManagerWeiboRedirectUrl = @"http://www.hiwedo.com";
+static NSString * const TQShareManagerWeiboShareWithoutImageUrl = @"https://api.weibo.com/2/statuses/repost.json";
+static NSString * const TQShareManagerWeiboAppId = @"3292682220";
+static NSString * const TQShareManagerWeiboAppSecret = @"7348b41a73640abe9d8e53e1def2424f";
+static NSString * const TQShareManagerWeiboRedirectUrl = @"http://open.weibo.com/apps/3292682220/privilege/oauth";
 
-NSString * const TQShareManagerDidSendToWeiboSuccessNotification = @"com.hly.sharemanager.notification.weibo.sendsuccess";
-NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.sharemanager.notification.weibo.sendfailed";
+static NSString * const TQShareManagerDefaultShareTitle = @"大手刀塔传奇助手";
+static NSString * const TQShareManagerDefaultShareDetail = @"大手刀塔传奇助手";
+
+NSString * const TQShareManagerDidSendToWeiboSuccessNotification = @"com.hly.share.notification.weibo.sendsuccess";
+NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.share.notification.weibo.sendfailed";
+
+NSString * const TQShareManagerDidSendToWeixinSuccessNotification = @"com.hly.share.notification.weixin.sendsuccess";
+NSString * const TQShareManagerDidSendToWeixinFailedNotification = @"com.hly.share.notification.weixin.sendfailed";
+
+NSString * const TQShareManagerDidSendToQQSuccessNotification = @"com.hly.share.notification.qq.sendsuccess";
+NSString * const TQShareManagerDidSendToQQFailedNotification = @"com.hly.share.notification.qq.sendfailed";
+
+NSString * const TQShareManagerUserCancelAuthNotification = @"com.hly.share.notification.cancel.auth";
+NSString * const TQShareManagerUserCancelShareNotification = @"com.hly.share.notification.cancel.share";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,7 +62,7 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-@interface TQShareManager () <WXApiDelegate, TencentSessionDelegate, WeiboSDKDelegate, WBHttpRequestDelegate>
+@interface TQShareManager () <WXApiDelegate, TencentSessionDelegate, QQApiInterfaceDelegate, WeiboSDKDelegate, WBHttpRequestDelegate>
 
 @property (nonatomic, strong) TencentOAuth *tencentOAuth;
 
@@ -74,16 +90,18 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
     self.tencentOAuth = [[TencentOAuth alloc] initWithAppId:TQShareManagerTencentAppId andDelegate:self];
     [WeiboSDK enableDebugMode:YES];
     [WeiboSDK registerApp:TQShareManagerWeiboAppId];
+    
+    [WXApi registerApp:TQShareManagerWeixinAppId];
 }
 
 - (BOOL)handleOpenURL:(NSURL *)url
 {
     NSString *path = url.absoluteString;
     if ([path hasPrefix:@"tencent"]) {
-        return [TencentOAuth HandleOpenURL:url];
+        return [QQApiInterface handleOpenURL:url delegate:self];
     } else if ([path hasPrefix:@"wx"]) {
         return [WXApi handleOpenURL:url delegate:self];
-    } else if ([path hasPrefix:@"wb118076031"]) {
+    } else if ([path hasPrefix:@"wb"]) {
         return [WeiboSDK handleOpenURL:url delegate:self];
     }
     
@@ -97,13 +115,18 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
     } else if (type == TQShareTypeWeibo) {
         WBAuthorizeRequest *request = [WBAuthorizeRequest request];
         request.redirectURI = TQShareManagerWeiboRedirectUrl;
-        request.scope = @"all";
+        request.scope = @"follow_app_official_microblog";
         request.userInfo = @{@"other_info": @(123)};
         [WeiboSDK sendRequest:request];
     }
 }
 
-- (void)shareWithType:(TQShareType)type title:(NSString *)title detail:(NSString *)detail image:(UIImage *)image url:(NSString *)url
+- (void)shareWithType:(TQShareType)type
+                title:(NSString *)title
+               detail:(NSString *)detail
+                image:(UIImage *)image
+             imageUrl:(NSURL *)imageUrl
+          relativeUrl:(NSURL *)relativeUrl
 {
     BOOL shareEnabled = NO;
     switch (type) {
@@ -130,8 +153,11 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
         if(image) {
             thumbnail = [self thumbImageWithImage:image limitSize:CGSizeMake(150.f, 150.f)];
         } else {
-            thumbnail = [self thumbImageWithImage:[UIImage imageNamed:@"icon.png"] limitSize:CGSizeMake(150.f, 150.f)];
+            thumbnail = [self thumbImageWithImage:[UIImage skinImageNamed:@"icon.png"] limitSize:CGSizeMake(150.f, 150.f)];
         }
+        
+        title = title ? : [self defaultShareTitle];
+        detail = detail ? : [self defaultShareDetail];
         
         switch(type)
         {
@@ -139,6 +165,7 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
             case TQShareTypeWeixinTimeline:
             {
                 WXMediaMessage *message = [WXMediaMessage message];
+                message.thumbData = UIImageJPEGRepresentation(thumbnail, 0.1);
                 
                 if(title)
                 {
@@ -150,10 +177,10 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
                     message.description = detail;
                 }
                 
-                if(url)
+                if(relativeUrl)
                 {
                     WXWebpageObject *webObj = [WXWebpageObject object];
-                    webObj.webpageUrl = url;
+                    webObj.webpageUrl = relativeUrl.absoluteString;
                     message.mediaObject = webObj;
                 }
                 
@@ -170,17 +197,24 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
                 req.bText = NO;
                 req.message = message;
                 [WXApi sendReq:req];
+                
+                break;
             }
                 
             case TQShareTypeQQ:
             {
-                QQApiNewsObject *newsObj = [QQApiNewsObject objectWithURL:[NSURL URLWithString:url] title:title description:detail previewImageData:UIImageJPEGRepresentation(thumbnail, 0.01)];
+                QQApiNewsObject *newsObj = nil;
+                if (imageUrl) {         // 优先使用imageUrl
+                    newsObj = [QQApiNewsObject objectWithURL:relativeUrl title:title description:detail previewImageURL:imageUrl];
+                } else if (thumbnail) {
+                    newsObj = [QQApiNewsObject objectWithURL:relativeUrl title:title description:detail previewImageData:UIImageJPEGRepresentation(thumbnail, 0.1)];
+                } else {
+                    newsObj = [QQApiNewsObject objectWithURL:relativeUrl title:title description:detail previewImageURL:nil];
+                }
                 SendMessageToQQReq *req = [SendMessageToQQReq reqWithContent:newsObj];
                 QQApiSendResultCode sent = [QQApiInterface sendReq:req];
                 [self handleQQSendResult:sent];
-                
-                [self handleQQSendResult:sent];
-                NSLog(@"qq sent code --> %d", sent);
+                DLog(@"qq sent code --> %d", sent);
                 
                 break;
             }
@@ -191,9 +225,11 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
                     
                     WBMessageObject *message = [WBMessageObject message];
                     message.text = detail;
-                    WBImageObject *imageObj = [WBImageObject object];
-                    imageObj.imageData = UIImageJPEGRepresentation(thumbnail, 0.01);
-                    message.imageObject = imageObj;
+                    if (thumbnail) {
+                        WBImageObject *imageObj = [WBImageObject object];
+                        imageObj.imageData = UIImageJPEGRepresentation(thumbnail, 0.01);
+                        message.imageObject = imageObj;
+                    }
                     
                     WBSendMessageToWeiboRequest *request = [WBSendMessageToWeiboRequest requestWithMessage:message];
                     
@@ -203,12 +239,18 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
                     
                     WBAuthorizeRequest *request = [WBAuthorizeRequest request];
                     request.redirectURI = TQShareManagerWeiboRedirectUrl;
-                    request.scope = @"all";
-                    request.userInfo = @{@"type": @"share",
-                                         @"content": @{@"text": [detail stringByAppendingFormat:@" %@", url],
-                                                       @"image": UIImageJPEGRepresentation(thumbnail, 0.01)}
-                                         };
-                    [WeiboSDK sendRequest:request];
+                    request.scope = @"follow_app_official_microblog";
+                    NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:@{@"type": @"share"}];
+                    NSMutableDictionary *content = [NSMutableDictionary dictionaryWithDictionary:@{@"text": detail}];
+                    if (thumbnail) {
+                        [content setObject:UIImageJPEGRepresentation(thumbnail, 0.01) forKey:@"image"];
+                    }
+                    [userInfo setObject:content forKey:@"content"];
+                    request.userInfo = userInfo;
+                    
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [WeiboSDK sendRequest:request];
+                    });
                 }
                 
                 
@@ -220,6 +262,53 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
     }
 }
 
+- (void)addShareCallbackNotificationObserver:(id)observer selector:(SEL)selector object:(id)object
+{
+    if (!observer || !selector) {
+        return;
+    }
+    
+    [[NSNotificationCenter defaultCenter] addObserver:observer selector:selector name:TQShareManagerDidSendToWeiboSuccessNotification object:object];
+    [[NSNotificationCenter defaultCenter] addObserver:observer selector:selector name:TQShareManagerDidSendToWeiboFailedNotification object:object];
+    [[NSNotificationCenter defaultCenter] addObserver:observer selector:selector name:TQShareManagerDidSendToWeixinSuccessNotification object:object];
+    [[NSNotificationCenter defaultCenter] addObserver:observer selector:selector name:TQShareManagerDidSendToWeixinFailedNotification object:object];
+    [[NSNotificationCenter defaultCenter] addObserver:observer selector:selector name:TQShareManagerDidSendToQQSuccessNotification object:object];
+    [[NSNotificationCenter defaultCenter] addObserver:observer selector:selector name:TQShareManagerDidSendToQQFailedNotification object:object];
+    [[NSNotificationCenter defaultCenter] addObserver:observer selector:selector name:TQShareManagerUserCancelAuthNotification object:object];
+    [[NSNotificationCenter defaultCenter] addObserver:observer selector:selector name:TQShareManagerUserCancelShareNotification object:object];
+}
+
+- (void)removeShareCallbackNotificationObserver:(id)observer object:(id)object
+{
+    if (!observer) {
+        return;
+    }
+    
+    [[NSNotificationCenter defaultCenter] removeObserver:observer name:TQShareManagerDidSendToWeiboSuccessNotification object:object];
+    [[NSNotificationCenter defaultCenter] removeObserver:observer name:TQShareManagerDidSendToWeiboFailedNotification object:object];
+    [[NSNotificationCenter defaultCenter] removeObserver:observer name:TQShareManagerDidSendToWeixinSuccessNotification object:object];
+    [[NSNotificationCenter defaultCenter] removeObserver:observer name:TQShareManagerDidSendToWeixinFailedNotification object:object];
+    [[NSNotificationCenter defaultCenter] removeObserver:observer name:TQShareManagerDidSendToQQSuccessNotification object:object];
+    [[NSNotificationCenter defaultCenter] removeObserver:observer name:TQShareManagerDidSendToQQFailedNotification object:object];
+    [[NSNotificationCenter defaultCenter] removeObserver:observer name:TQShareManagerUserCancelAuthNotification object:object];
+    [[NSNotificationCenter defaultCenter] removeObserver:observer name:TQShareManagerUserCancelShareNotification object:object];
+}
+
+- (NSString *)defaultShareTitle
+{
+    return TQShareManagerDefaultShareTitle;
+}
+
+- (NSString *)defaultShareDetail
+{
+    return TQShareManagerDefaultShareDetail;
+}
+
+- (UIImage *)defaultShareImage
+{
+    return [self thumbImageWithImage:[UIImage skinImageNamed:@"icon.png"] limitSize:CGSizeMake(150.f, 150.f)];
+}
+
 
 #pragma mark -
 #pragma mark - private
@@ -228,7 +317,7 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
     BOOL enabled = ([WXApi isWXAppInstalled] && [WXApi isWXAppSupportApi]);
     if(!enabled)
     {
-//        [UIAlertView showAlertTitle:@"您还没有安装微信或者您微信的版本不支持分享功能!" message:nil alertStyle:AlertStyleFail];
+        [DGAlertView showAlertTitle:@"您还没有安装微信或者您微信的版本不支持分享功能!" message:nil alertStyle:AlertStyleFail];
     }
     return enabled;
 }
@@ -261,46 +350,39 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
     {
         case EQQAPIAPPNOTREGISTED:
         {
-            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"App未注册" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
-            [msgbox show];
+            DLog(@"App未注册");
             break;
         }
         case EQQAPIMESSAGECONTENTINVALID:
         case EQQAPIMESSAGECONTENTNULL:
         case EQQAPIMESSAGETYPEINVALID:
         {
-            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"发送参数错误" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
-            [msgbox show];
+            DLog(@"发送参数错误");
             break;
         }
         case EQQAPIQQNOTINSTALLED:
         {
-            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"未安装手Q" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
-            [msgbox show];
+            DLog(@"未安装手Q");
             break;
         }
         case EQQAPIQQNOTSUPPORTAPI:
         {
-            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"API接口不支持" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
-            [msgbox show];
+            DLog(@"API接口不支持");
             break;
         }
         case EQQAPISENDFAILD:
         {
-            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"发送失败" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
-            [msgbox show];
+            DLog(@"发送失败");
             break;
         }
         case EQQAPIQZONENOTSUPPORTTEXT:
         {
-            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"空间分享不支持纯文本分享，请使用图文分享" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
-            [msgbox show];
+            DLog(@"空间分享不支持纯文本分享，请使用图文分享");
             break;
         }
         case EQQAPIQZONENOTSUPPORTIMAGE:
         {
-            UIAlertView *msgbox = [[UIAlertView alloc] initWithTitle:@"Error" message:@"空间分享不支持纯图片分享，请使用图文分享" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:nil];
-            [msgbox show];
+            DLog(@"空间分享不支持纯图片分享，请使用图文分享");
             break;
         }
         default:
@@ -312,37 +394,40 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
 
 #pragma mark -
 #pragma mark - tecent
-- (void)tencentDiNSLogin
+- (void)tencentDidLogin
 {
-    NSLog(@"tencent did login");
+    DLog(@"tencent did login");
 }
 
 - (void)tencentDidNotLogin:(BOOL)cancelled
 {
-    NSLog(@"cancelled --> %@", cancelled ? @"YES" : @"NO");
+    DLog(@"cancelled --> %@", cancelled ? @"YES" : @"NO");
+    if (cancelled) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerUserCancelAuthNotification object:nil];
+    }
 }
 
 - (void)tencentDidNotNetWork
 {
-    NSLog(@"unreachable");
+    DLog(@"unreachable");
 }
 
 - (BOOL)onTencentReq:(TencentApiReq *)req
 {
-    NSLog(@"req --> %@", req);
+    DLog(@"req --> %@", req);
     
     return YES;
 }
 
 - (BOOL)onTencentResp:(TencentApiResp *)resp
 {
-    NSLog(@"resp --> %@", resp);
+    DLog(@"resp --> %@", resp);
     
     return YES;
 }
 
 #pragma mark -
-#pragma mark - weibo
+#pragma mark - weibo auth/client delegate
 - (void)didReceiveWeiboRequest:(WBBaseRequest *)request
 {
     
@@ -372,15 +457,30 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
                     
                     NSData *imageData = [content objectForKey:@"image"];
                     NSMutableDictionary *parameters = [NSMutableDictionary dictionaryWithCapacity:3];
+                    NSString *shareUrl = TQShareManagerWeiboShareWithoutImageUrl;
                     [parameters setObject:text forKey:@"status"];
                     [parameters setObject:autorizeResponse.accessToken forKey:@"access_token"];
                     if (imageData) {
                         [parameters setObject:imageData forKey:@"pic"];
+                        shareUrl = TQShareManagerWeiboShareUrl;
                     }
                     
-                    [WBHttpRequest requestWithAccessToken:autorizeResponse.accessToken url:TQShareManagerWeiboShareUrl httpMethod:@"POST" params:parameters delegate:self withTag:nil];
+                    [WBHttpRequest requestWithAccessToken:autorizeResponse.accessToken url:shareUrl httpMethod:@"POST" params:parameters delegate:self withTag:nil];
                 }
             }
+        } else if (autorizeResponse.statusCode == WeiboSDKResponseStatusCodeUserCancel ||
+                   autorizeResponse.statusCode == WeiboSDKResponseStatusCodeUserCancelInstall) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerUserCancelAuthNotification object:nil];
+        } else {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerDidSendToWeiboFailedNotification object:nil];
+        }
+    } else if ([response isKindOfClass:[WBSendMessageToWeiboResponse class]]) {
+        if (response.statusCode == WeiboSDKResponseStatusCodeSuccess) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerDidSendToWeiboSuccessNotification object:nil];
+        } else if (response.statusCode == WeiboSDKResponseStatusCodeUserCancel) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerUserCancelShareNotification object:nil];
+        } else {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerDidSendToWeiboFailedNotification object:nil];
         }
     }
 }
@@ -406,11 +506,49 @@ NSString * const TQShareManagerDidSendToWeiboFailedNotification = @"com.hly.shar
 {
     NSError *error = nil;
     NSDictionary *responseObject = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&error];
-    if (responseObject && [responseObject isKindOfClass:[NSDictionary class]]) {
+    if (!error && responseObject && [responseObject isKindOfClass:[NSDictionary class]] && ![responseObject objectForKey:@"error"]) {
+        
         [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerDidSendToWeiboSuccessNotification object:responseObject];
     } else {
         [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerDidSendToWeiboFailedNotification object:error];
     }
+}
+
+#pragma mark -
+#pragma mark - weixin/qq
+- (void)onResp:(id)resp
+{
+    if ([resp isKindOfClass:[BaseResp class]]) {
+        BaseResp *theResp = (BaseResp *)resp;
+        if (theResp.errCode == WXSuccess) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerDidSendToWeixinSuccessNotification object:nil];
+        } else if (theResp.errCode == WXErrCodeUserCancel) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerUserCancelShareNotification object:nil];
+        } else {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerDidSendToWeixinFailedNotification object:nil];
+        }
+    } else if ([resp isKindOfClass:[QQBaseResp class]]) {
+        QQBaseResp *theResp = (QQBaseResp *)resp;
+        DLog(@"qq resp type --> %d, msg --> %@， info --> %@, result --> %@", theResp.type, theResp.errorDescription, theResp.extendInfo, theResp.result);
+        if (theResp.type == 2 && !theResp.errorDescription && theResp.result.intValue == 0) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerDidSendToQQSuccessNotification object:nil];
+        } else if (theResp.result.intValue == -4) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerUserCancelShareNotification object:nil];
+        } else {
+            [[NSNotificationCenter defaultCenter] postNotificationName:TQShareManagerDidSendToQQFailedNotification object:nil];
+        }
+    }
+    
+}
+
+- (void)onReq:(id)req
+{
+    DLog(@"weixin/qq on request");
+}
+
+- (void)isOnlineResponse:(NSDictionary *)response
+{
+    DLog(@"is qq online on request --> %@", response);
 }
 
 @end

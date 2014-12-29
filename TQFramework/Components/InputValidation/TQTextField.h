@@ -14,4 +14,7 @@
 
 @property (nonatomic, strong) TQInputValidator *inputValidator;
 
+- (BOOL)validate;
+- (BOOL)validateWithPrompt:(NSString *)prompt;
+
 @end

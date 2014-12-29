@@ -1,0 +1,23 @@
+/* 
+  Localizable.strings
+  HuangLuyang
+
+  Created by huangluyang on 14-7-22.
+  Copyright (c) 2014年 huangluyang. All rights reserved.
+*/
+"contact_me" = "联系我";
+"resume" = "简历";
+"back" = "返回";
+"seg_resume_ch" = "中文简历";
+"seg_resume_en" = "英文简历";
+"main_more" = "更多";
+"more_setting" = "使用设置";
+"more_help" = "使用帮助";
+"more_rate" = "给我打分";
+"more_about" = "关于";
+"more_share" = "推荐给朋友";
+"btn_cancel" = "取消";
+"act_mail" = "邮件";
+"act_wechat" = "微信";
+"act_wechat" = "微信";
+"current_version" = "当前版本";

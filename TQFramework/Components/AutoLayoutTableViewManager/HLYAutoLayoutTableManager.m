@@ -10,17 +10,18 @@
 
 @interface HLYAutoLayoutTableManager ()
 
+//FIXME: assign -> weak
 @property (nonatomic, weak) UITableView *tableView;
+
+/**
+ *  缓存cell模板，每个reuseIdentifier对应一个cell模板
+ */
 @property (nonatomic, strong) NSMutableDictionary *cellCache;
 
 @end
 
 @implementation HLYAutoLayoutTableManager
 
-- (void)dealloc
-{
-    self.cellCache = nil;
-}
 
 - (instancetype)init
 {
@@ -40,6 +41,9 @@
     return self;
 }
 
+/**
+ *  更新本地缓存的cell模板
+ */
 - (void)updateCell:(UITableViewCell *)cell forReuseIdentifier:(NSString *)identifier enforceable:(BOOL)isEnforceable
 {
     if (!cell || !identifier || identifier.length == 0) {
@@ -52,6 +56,9 @@
     }
 }
 
+/**
+ *  返回计算cell高度所需要的cell模板
+ */
 - (UITableViewCell *)cellAtIndexPath:(NSIndexPath *)indexPath reuseIdentfier:(NSString *)identifier
 {
     if (!indexPath) {
@@ -59,8 +66,8 @@
     }
     
     UITableViewCell *cell = [self.cellCache objectForKey:identifier];
-    if (!cell && self.cellAtIndexPath) {
-        cell = self.cellAtIndexPath(indexPath);
+    if (!cell && self.tableView && self.cellAtIndexPath) {
+        cell = self.cellAtIndexPath(self.tableView, indexPath);
         [self updateCell:cell forReuseIdentifier:identifier enforceable:YES];
     }
     
@@ -69,10 +76,14 @@
 
 - (CGFloat)heightForCellAtIndexPath:(NSIndexPath *)indexPath reuseIdentfier:(NSString *)identifier
 {
+    if (!indexPath || !identifier) {
+        return 0;
+    }
+    
     UITableViewCell *cell = [self cellAtIndexPath:indexPath reuseIdentfier:identifier];
     
     if (self.configureCellAtIndexPath) {
-        self.configureCellAtIndexPath(cell, indexPath);
+        self.configureCellAtIndexPath(cell, indexPath, YES);
     }
     
     // Make sure the constraints have been added to this cell, since it may have just been created from scratch

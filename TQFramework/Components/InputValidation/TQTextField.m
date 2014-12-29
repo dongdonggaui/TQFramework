@@ -7,15 +7,27 @@
 //
 
 #import "TQTextField.h"
+#import "TQInputValidator.h"
 
 @implementation TQTextField
 
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
+- (BOOL)validate
+{
+    return [self validateWithPrompt:nil];
 }
-*/
+
+- (BOOL)validateWithPrompt:(NSString *)prompt
+{
+    NSError *error = nil;
+    BOOL validateResult = [self.inputValidator validateInput:self error:&error];
+    if (!validateResult) {
+        NSString *reason = [error.userInfo objectForKey:NSLocalizedFailureReasonErrorKey];
+        NSString *msg = prompt ? [NSString stringWithFormat:@"%@：%@", prompt, reason] : reason;
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil cancelButtonTitle:NSLocalizedString(@"确定", @"确定") otherButtonTitles:nil];
+        [alert show];
+    }
+    
+    return validateResult;
+}
 
 @end
