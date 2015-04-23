@@ -22,13 +22,24 @@ typedef NS_ENUM(NSUInteger, HLYPullToRefreshType) {
 
 @interface HLYPullToRefreshLoadingView : UIView
 
-@property (nonatomic, strong, readonly) UILabel *stateLabel;
-@property (nonatomic, strong, readonly) UILabel *timeLabel;
-
 @property (nonatomic, unsafe_unretained) HLYPullToRefreshState state;
 @property (nonatomic, unsafe_unretained) HLYPullToRefreshType type;
 @property (nonatomic, strong) NSString *updateTimeIdentifier;
 
+- (instancetype)initWithFrame:(CGRect)frame contentView:(UIView *)contentView;
+
 - (void)setStatusMessage:(NSString *)message forState:(HLYPullToRefreshState)state;
+- (NSString *)statusMessageForState:(HLYPullToRefreshState)state;
+
+- (void)updateWithType:(HLYPullToRefreshType)type state:(HLYPullToRefreshState)state;
+
+/**
+ *  处理滑动回调
+ *
+ *  @param progress 可见部分百分比
+ */
+- (void)updateWithProgress:(CGFloat)progress;
+
+- (NSString *)lastUpdateTime;
 
 @end

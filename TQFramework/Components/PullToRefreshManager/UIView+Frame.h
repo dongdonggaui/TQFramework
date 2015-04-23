@@ -19,6 +19,7 @@
 
 - (CGFloat)hly_width;
 - (CGFloat)hly_height;
+- (CGSize)hly_size;
 
 - (void)hly_setTop:(CGFloat)top;
 - (void)hly_setBottom:(CGFloat)bottom;
@@ -29,5 +30,6 @@
 
 - (void)hly_setWidth:(CGFloat)width;
 - (void)hly_setHeight:(CGFloat)height;
+- (void)hly_setSize:(CGSize)size;
 
 @end

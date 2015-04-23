@@ -1,7 +1,0 @@
-CLANG_CXX_LANGUAGE_STANDARD = c++11
-CLANG_CXX_LIBRARY = libc++
-GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1 ${inherited} NSLOGGER_BUILD_USERNAME="${USER}"
-HEADER_SEARCH_PATHS = "${PODS_ROOT}/Headers" "${PODS_ROOT}/Headers/AFNetworking" "${PODS_ROOT}/Headers/MMProgressHUD" "${PODS_ROOT}/Headers/NSLogger" "${PODS_ROOT}/Headers/UIColor-Hex" "${PODS_ROOT}/Headers/UIImage+ImageWithColor" "${PODS_ROOT}/Headers/pop"
-OTHER_CFLAGS = $(inherited) -isystem "${PODS_ROOT}/Headers" -isystem "${PODS_ROOT}/Headers/AFNetworking" -isystem "${PODS_ROOT}/Headers/MMProgressHUD" -isystem "${PODS_ROOT}/Headers/NSLogger" -isystem "${PODS_ROOT}/Headers/UIColor-Hex" -isystem "${PODS_ROOT}/Headers/UIImage+ImageWithColor" -isystem "${PODS_ROOT}/Headers/pop"
-OTHER_LDFLAGS = -ObjC -lc++ -framework CFNetwork -framework CoreGraphics -framework MobileCoreServices -framework QuartzCore -framework Security -framework SystemConfiguration -framework UIKit
-PODS_ROOT = ${SRCROOT}/Pods

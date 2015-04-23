@@ -15,11 +15,7 @@ static NSString * const HLYPullToRefreshUpdateTimeUserDefaultsKey = @"com.hly.us
 
 @interface HLYPullToRefreshLoadingView ()
 
-@property (nonatomic, strong) UILabel *stateLabel;
-@property (nonatomic, strong) UILabel *timeLabel;
-@property (nonatomic, strong) CALayer *animateImageLayer;   // 必须用CALayer，若用UIImageView则在用CATransation旋转的时候无动画效果
-
-@property (nonatomic, strong) UIActivityIndicatorView *juhua;
+@property (nonatomic, strong) UIView *loadingContentView;
 
 //
 @property (nonatomic, strong) NSString *normalLoadNewStatus;
@@ -38,188 +34,25 @@ static NSString * const HLYPullToRefreshUpdateTimeUserDefaultsKey = @"com.hly.us
 {
     self = [super initWithFrame:frame];
     if (self) {
-        _stateLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        _stateLabel.backgroundColor = [UIColor clearColor];
-        _stateLabel.font = [UIFont systemFontOfSize:14];
-        [self addSubview:_stateLabel];
         
-        _timeLabel = [[UILabel alloc] initWithFrame:CGRectZero];
-        _timeLabel.backgroundColor = [UIColor clearColor];
-        _timeLabel.font = [UIFont systemFontOfSize:12];
-        _timeLabel.textColor = [UIColor darkGrayColor];
-        [self addSubview:_timeLabel];
-        
-        NSString *bundlePath = [[NSBundle mainBundle] pathForResource:@"HLYPullToRefreshManager" ofType:@"bundle"];
-        bundlePath = [bundlePath stringByAppendingPathComponent:@"images"];
-        NSString *downArrowImagePath = [bundlePath stringByAppendingPathComponent:@"blueArrow.png"];
-        UIImage *image = [UIImage imageWithContentsOfFile:downArrowImagePath];
-        _animateImageLayer = [[CALayer alloc] init];
-        _animateImageLayer.frame = CGRectMake(0, 0, image.size.width, image.size.height);
-        _animateImageLayer.contents = (id)image.CGImage;
-        UIView *animateImageLayerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, image.size.width + 10, image.size.height + 10)];
-        [animateImageLayerView.layer addSublayer:_animateImageLayer];
-        [self addSubview:animateImageLayerView];
-        
-        _juhua = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-        [self addSubview:_juhua];
-        
-        /**
-         *  iOS8以前的autoLayout对UITableView的addSubView方式添加的且设置
-         *  translatesAutoresizingMaskIntoConstraints为NO的子视图不兼容
-         *  故需判断系统版本，iOS8及以上版本使用AutoLayout约束，iOS8以下的版本
-         *  使用frame
-         */
-        if (![self ptr_isBelowIOS8]) {
-            // constraints
-//            self.translatesAutoresizingMaskIntoConstraints = NO;
-//            _stateLabel.translatesAutoresizingMaskIntoConstraints = NO;
-//            _timeLabel.translatesAutoresizingMaskIntoConstraints = NO;
-//            animateImageLayerView.translatesAutoresizingMaskIntoConstraints = NO;
-//            _juhua.translatesAutoresizingMaskIntoConstraints = NO;
-//            
-//            NSDictionary *viewsDic = NSDictionaryOfVariableBindings(_stateLabel, _timeLabel, animateImageLayerView);
-//            
-//            [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-12-[_stateLabel]-10-[_timeLabel]" options:0 metrics:nil views:viewsDic]];
-//            [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-30-[animateImageLayerView(==imageWidth)]" options:0 metrics:@{@"imageWidth":@(image.size.width)} views:viewsDic]];
-//            [self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[animateImageLayerView(==imageHeight)]" options:0 metrics:@{@"imageHeight":@(image.size.height)} views:viewsDic]];
-//            [self addConstraint:[NSLayoutConstraint constraintWithItem:animateImageLayerView attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterY multiplier:1 constant:0]];
-//            [self addConstraint:[NSLayoutConstraint constraintWithItem:self.juhua attribute:NSLayoutAttributeCenterY relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterY multiplier:1 constant:0]];
-//            [self addConstraint:[NSLayoutConstraint constraintWithItem:self.juhua attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:animateImageLayerView attribute:NSLayoutAttributeCenterX multiplier:1 constant:0]];
-//            [self addConstraint:[NSLayoutConstraint constraintWithItem:_stateLabel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeCenterX multiplier:1 constant:0]];
-        }
     }
     return self;
 }
 
-- (void)didMoveToSuperview
+- (instancetype)initWithFrame:(CGRect)frame contentView:(UIView *)contentView
 {
-    [super didMoveToSuperview];
+    if (self = [self initWithFrame:frame]) {
+        self.loadingContentView = contentView;
+    }
     
-    [self loadUpdateTime];
-}
-
-- (void)updateConstraints
-{
-    [super updateConstraints];
-}
-
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
-    
-    [self.stateLabel sizeToFit];
-    
-    [self.timeLabel sizeToFit];
-    
-//    if ([self ptr_isBelowIOS8]) {
-        [self.stateLabel hly_setCenterX:ceilf([UIScreen mainScreen].bounds.size.width * 0.5)];
-        [self.stateLabel hly_setTop:12];
-        
-        [self.timeLabel hly_setCenterX:[self.stateLabel hly_centerX]];
-        [self.timeLabel hly_setTop:[self.stateLabel hly_bottom] + 10];
-        
-        CGRect frame = self.animateImageLayer.frame;
-        frame.origin.x = 30;
-        frame.origin.y = ceilf(([self hly_height] - CGRectGetHeight(self.animateImageLayer.frame)) / 2);
-        self.animateImageLayer.frame = frame;
-        
-        CGRect juhuaFrame = self.juhua.frame;
-        juhuaFrame.origin.x = frame.origin.x + ceilf((frame.size.width - self.juhua.frame.size.width) / 2);
-        juhuaFrame.origin.y = frame.origin.y + ceilf((frame.size.height - self.juhua.frame.size.height) / 2);
-        self.juhua.frame = juhuaFrame;
-//    }
+    return self;
 }
 
 #pragma mark -
 #pragma mark - setters && getters
-- (void)setType:(HLYPullToRefreshType)type
-{
-    switch (type) {
-        case HLYPullToRefreshTypeRefresh:
-            
-            break;
-            
-        case HLYPullToRefreshTypeLoadMore:
-            
-            break;
-            
-        default:
-            break;
-    }
-    
-    _type = type;
-}
-
 - (void)setState:(HLYPullToRefreshState)state
 {
-    switch (state) {
-            
-        case HLYPullToRefreshStateNormal: {
-            
-            self.stateLabel.hidden = NO;
-            self.animateImageLayer.hidden = NO;
-            self.timeLabel.hidden = NO;
-            
-            [self loadUpdateTime];
-            
-            if (_state == HLYPullToRefreshStateLoading) {
-                
-                [self updateRefreshTime];
-                
-            } else if (_state == HLYPullToRefreshStatePulling) {
-                [CATransaction begin];
-                [CATransaction setAnimationDuration:0.18];
-                self.animateImageLayer.transform = CATransform3DIdentity;
-                [CATransaction commit];
-                
-            }
-            
-            self.stateLabel.text = self.type == HLYPullToRefreshTypeRefresh ? self.normalLoadNewStatus : self.normalLoadMoreStatus;
-            
-            [self.juhua stopAnimating];
-            [CATransaction begin];
-            [CATransaction setValue:(id)kCFBooleanTrue forKey:kCATransactionDisableActions];
-            self.animateImageLayer.hidden = NO;
-            self.animateImageLayer.transform = CATransform3DIdentity;
-            [CATransaction commit];
-            
-            break;
-        }
-            
-        case HLYPullToRefreshStatePulling:
-            
-            self.stateLabel.hidden = NO;
-            self.animateImageLayer.hidden = NO;
-            self.timeLabel.hidden = NO;
-            
-            self.stateLabel.text = self.type == HLYPullToRefreshTypeRefresh ? self.pullingLoadNewStatus : self.pullingLoadMoreStatus;
-            [CATransaction begin];
-            [CATransaction setAnimationDuration:0.18];
-            self.animateImageLayer.transform = CATransform3DMakeRotation((M_PI / 180.0) * 180.0f, 0.0f, 0.0f, 1.0f);
-            [CATransaction commit];
-            
-            break;
-            
-        case HLYPullToRefreshStateLoading:
-            
-            self.stateLabel.hidden = NO;
-            self.timeLabel.hidden = NO;
-            
-            self.stateLabel.text = self.type == HLYPullToRefreshTypeRefresh ? self.loadingLoadNewStatus : self.loadingLoadMoreStatus;
-            [self.juhua startAnimating];
-            self.animateImageLayer.hidden = YES;
-            
-            break;
-            
-        case HLYPullToRefreshStateHide:
-        default:
-            self.stateLabel.hidden = YES;
-            [self.juhua stopAnimating];
-            self.animateImageLayer.hidden = YES;
-            self.timeLabel.hidden = YES;
-            
-            break;
-    }
+    [self updateWithType:self.type state:state];
     _state = state;
     
     [self setNeedsLayout];
@@ -313,22 +146,69 @@ static NSString * const HLYPullToRefreshUpdateTimeUserDefaultsKey = @"com.hly.us
     }
 }
 
-#pragma mark -
-#pragma mark - private
-- (void)loadUpdateTime
+- (NSString *)statusMessageForState:(HLYPullToRefreshState)state
+{
+    NSString *status = nil;
+    switch (state) {
+        case HLYPullToRefreshStateNormal:
+            if (self.type == HLYPullToRefreshTypeRefresh) {
+                status = self.normalLoadNewStatus;
+            } else {
+                status = self.normalLoadMoreStatus;
+            }
+            break;
+            
+        case HLYPullToRefreshStatePulling:
+            if (self.type == HLYPullToRefreshTypeRefresh) {
+                status = self.pullingLoadNewStatus;
+            } else {
+                status = self.pullingLoadMoreStatus;
+            }
+            break;
+            
+        case HLYPullToRefreshStateLoading:
+            if (self.type == HLYPullToRefreshTypeRefresh) {
+                status = self.loadingLoadNewStatus;
+            } else {
+                status = self.loadingLoadMoreStatus;
+            }
+            break;
+            
+        default:
+            break;
+    }
+    
+    return status;
+}
+
+- (void)updateWithType:(HLYPullToRefreshType)type state:(HLYPullToRefreshState)state
+{
+    
+}
+
+- (void)updateWithProgress:(CGFloat)progress
+{
+    
+}
+
+- (NSString *)lastUpdateTime
 {
     if (!self.updateTimeIdentifier) {
-        return;
+        return nil;
     }
     
     NSDictionary *updateInfo = [[NSUserDefaults standardUserDefaults] objectForKey:HLYPullToRefreshUpdateTimeUserDefaultsKey];
     
     if (updateInfo && [updateInfo objectForKey:self.updateTimeIdentifier]) {
         NSDate *updateTime = [updateInfo objectForKey:self.updateTimeIdentifier];
-        self.timeLabel.text = [[HLYDateFormatManager sharedInstance] lapseTimeFormatFromDate:updateTime];
+        return [[HLYDateFormatManager sharedInstance] lapseTimeFormatFromDate:updateTime];
     }
+    
+    return nil;
 }
 
+#pragma mark -
+#pragma mark - private
 - (void)updateRefreshTime
 {
     if (!self.updateTimeIdentifier) {
@@ -344,7 +224,6 @@ static NSString * const HLYPullToRefreshUpdateTimeUserDefaultsKey = @"com.hly.us
     }
     
     NSDate *now = [NSDate date];
-    self.timeLabel.text = [[HLYDateFormatManager sharedInstance] lapseTimeFormatFromDate:now];
     
     [temp setObject:now forKey:self.updateTimeIdentifier];
     

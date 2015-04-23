@@ -92,4 +92,7 @@
  */
 - (void)setBottomLayoutGuide:(CGFloat)bottomLayoutGuide withViewController:(UIViewController *)viewController;
 
+// UIScrollViewDelegate 回调
+@property (nonatomic, copy) void (^scrollViewDidScroll)(UIScrollView *scrollView);
+@property (nonatomic, copy) void (^scrollViewWillBeginDragging)(UIScrollView *scrollView);
 @end

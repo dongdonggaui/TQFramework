@@ -50,6 +50,11 @@
     return self.frame.size.height;
 }
 
+- (CGSize)hly_size
+{
+    return self.frame.size;
+}
+
 - (void)hly_setTop:(CGFloat)top
 {
     CGRect frame = self.frame;
@@ -103,6 +108,13 @@
 {
     CGRect frame = self.frame;
     frame.size.height = height;
+    self.frame = frame;
+}
+
+- (void)hly_setSize:(CGSize)size
+{
+    CGRect frame = self.frame;
+    frame.size = size;
     self.frame = frame;
 }
 

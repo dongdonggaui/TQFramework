@@ -17,14 +17,11 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 
-/**
- *  用来保存footerView的约束，方便remove
- */
-@property (nonatomic, strong) NSArray *footerViewTopConstraints;
-
 @end
 
 @implementation HLYPullToRefreshManager
+
+@synthesize headerView = _headerView, footerView = _footerView;
 
 - (void)dealloc
 {
@@ -43,42 +40,10 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
         _scrollView = scrollView;
         _scrollView.delegate = self;
         
-        _footerView = [[HLYPullToRefreshLoadingView alloc] initWithFrame:CGRectMake(0, [_scrollView hly_height], CGRectGetWidth(scrollView.frame), kHLYPullToRefreshHeaderHeight)];
-        _footerView.type = HLYPullToRefreshTypeLoadMore;
-        _footerView.backgroundColor = [UIColor clearColor];
-        _footerView.clipsToBounds = NO;
-        [_scrollView addSubview:_footerView];
-        
-        _headerView = [[HLYPullToRefreshLoadingView alloc] initWithFrame:CGRectMake(0, -kHLYPullToRefreshHeaderHeight, CGRectGetWidth(scrollView.frame), kHLYPullToRefreshHeaderHeight)];
-        _headerView.type = HLYPullToRefreshTypeRefresh;
-        _headerView.backgroundColor = [UIColor clearColor];
-        _headerView.clipsToBounds = NO;
-        [_scrollView addSubview:_headerView];
-        
         self.enableLoadNew = YES;
-        self.enableLoadMore = YES;
+        self.enableLoadMore = NO;
         self.viewTopLayoutGuide = 0;
         self.viewBottomLayoutGuide = 0;
-        
-        /**
-         *  iOS8以前的autoLayout对UIscrollView的addSubView方式添加的且设置
-         *  translatesAutoresizingMaskIntoConstraints为NO的子视图不兼容
-         *  故需判断系统版本，iOS8及以上版本使用AutoLayout约束，iOS8以下的版本
-         *  使用frame
-         */
-        if (![self ptrm_isBelowIOS8]) {
-            // constraints
-            _footerView.translatesAutoresizingMaskIntoConstraints = NO;
-            _headerView.translatesAutoresizingMaskIntoConstraints = NO;
-            NSDictionary *viewsDic = NSDictionaryOfVariableBindings(_footerView, _headerView, _scrollView);
-            NSDictionary *metricsDic = @{@"headerHeight": @(kHLYPullToRefreshHeaderHeight),
-                                         @"footerHeight": @(kHLYPullToRefreshFooterHeight)};
-            
-            [_scrollView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[_headerView(==_scrollView)]-0-|" options:0 metrics:nil views:viewsDic]];
-            [_scrollView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[_headerView(==headerHeight)]-0-|" options:0 metrics:metricsDic views:viewsDic]];
-            [_scrollView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-0-[_footerView(==_scrollView)]-0-|" options:0 metrics:nil views:viewsDic]];
-            [_scrollView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[_footerView(==footerHeight)]" options:0 metrics:metricsDic views:viewsDic]];
-        }
         
         [_scrollView addObserver:self forKeyPath:@"contentSize" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:(__bridge void *)self];
     }
@@ -114,6 +79,19 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
     }
 }
 
+- (HLYPullToRefreshLoadingView *)headerView
+{
+    if (!_headerView) {
+        _headerView = [[HLYPullToRefreshLoadingView alloc] initWithFrame:CGRectMake(0, -kHLYPullToRefreshHeaderHeight, CGRectGetWidth(self.scrollView.frame), kHLYPullToRefreshHeaderHeight)];
+        _headerView.type = HLYPullToRefreshTypeRefresh;
+        _headerView.backgroundColor = [UIColor clearColor];
+        _headerView.clipsToBounds = NO;
+        [self.scrollView addSubview:_headerView];
+    }
+    
+    return _headerView;
+}
+
 - (void)setHeaderView:(HLYPullToRefreshLoadingView *)headerView
 {
     if (!headerView) {
@@ -127,6 +105,19 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
         [self.scrollView addSubview:_headerView];
         kHLYPullToRefreshHeaderHeight = [_headerView hly_height];   // 强制更新视图高度
     }
+}
+
+- (HLYPullToRefreshLoadingView *)footerView
+{
+    if (!_footerView) {
+        _footerView = [[HLYPullToRefreshLoadingView alloc] initWithFrame:CGRectMake(0, [_scrollView hly_height], CGRectGetWidth(self.scrollView.frame), kHLYPullToRefreshHeaderHeight)];
+        _footerView.type = HLYPullToRefreshTypeLoadMore;
+        _footerView.backgroundColor = [UIColor clearColor];
+        _footerView.clipsToBounds = NO;
+        [_scrollView addSubview:_footerView];
+    }
+    
+    return _footerView;
 }
 
 - (void)setFooterView:(HLYPullToRefreshLoadingView *)footerView
@@ -179,7 +170,6 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
         safeSelf.scrollView.contentOffset = offset;
     } completion:^(BOOL finished) {
         if (finished) {
-//            safeSelf.headerView.state = HLYPullToRefreshStateLoading;
             if (safeSelf.loadNew) {
                 safeSelf.loadNew();
             }
@@ -244,15 +234,24 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
     CGFloat topMaxLine = -self.viewTopLayoutGuide - kHLYPullToRefreshHeaderHeight;
     CGFloat bottomBaseLine = self.viewBottomLayoutGuide + footerTop - CGRectGetHeight(self.scrollView.frame);
     CGFloat bottomMaxLine = bottomBaseLine + kHLYPullToRefreshHeaderHeight;
+    CGFloat progress = 0;
     
-    if (offsetY < topBaseLine && offsetY > topMaxLine) {
+    if (offsetY <= topBaseLine && offsetY >= topMaxLine) {
         self.headerView.state = HLYPullToRefreshStateNormal;
+        progress = (topBaseLine - offsetY) / kHLYPullToRefreshHeaderHeight;
+        [self.headerView updateWithProgress:progress];
     } else if (offsetY < topMaxLine) {
         self.headerView.state = HLYPullToRefreshStatePulling;
-    } else if (offsetY > bottomBaseLine && offsetY < bottomMaxLine) {
+        progress = 1;
+        [self.headerView updateWithProgress:progress];
+    } else if (offsetY >= bottomBaseLine && offsetY <= bottomMaxLine) {
         self.footerView.state = HLYPullToRefreshStateNormal;
+        progress = (offsetY - bottomBaseLine) / kHLYPullToRefreshFooterHeight;
+        [self.footerView updateWithProgress:progress];
     } else if (offsetY > bottomMaxLine) {
         self.footerView.state = HLYPullToRefreshStatePulling;
+        progress = 1;
+        [self.footerView updateWithProgress:progress];
     } else {
         self.headerView.state = HLYPullToRefreshStateHide;
         self.footerView.state = HLYPullToRefreshStateHide;
@@ -282,29 +281,17 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
 {
     if (context == (__bridge void *)self && object == self.scrollView) {
         // 设置kvo来观察table view 的 contentSize 以重新对 footerView 进行约束
-        NSLog(@"change --> %@", change);
         CGSize newSize = [[change valueForKey:@"new"] CGSizeValue];
         CGSize oldSize = [[change valueForKey:@"old"] CGSizeValue];
         
         if (oldSize.height != newSize.height) {
             CGFloat bottom = MAX(newSize.height, self.scrollView.contentSize.height);
-            NSDictionary *viewsDic = @{@"footerView": self.footerView};
-            NSDictionary *metricDic = @{@"newFooterTop": @(bottom)};
             
-            if (![self ptrm_isBelowIOS8]) {
-                if (self.footerViewTopConstraints) {
-                    [self.scrollView removeConstraints:self.footerViewTopConstraints];
-                }
-                self.footerViewTopConstraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(newFooterTop)-[footerView]" options:0 metrics:metricDic views:viewsDic];
-                [self.scrollView addConstraints:self.footerViewTopConstraints];
-                [self.scrollView setNeedsUpdateConstraints];
-            } else {
-                [self.headerView hly_setHeight:kHLYPullToRefreshHeaderHeight];
-                [self.headerView hly_setWidth:[self.scrollView hly_width]];
-                [self.footerView hly_setHeight:kHLYPullToRefreshFooterHeight];
-                [self.footerView hly_setWidth:[self.scrollView hly_width]];
-                [self.footerView hly_setTop:bottom];
-            }
+            [self.headerView hly_setHeight:kHLYPullToRefreshHeaderHeight];
+            [self.headerView hly_setWidth:[self.scrollView hly_width]];
+            [self.footerView hly_setHeight:kHLYPullToRefreshFooterHeight];
+            [self.footerView hly_setWidth:[self.scrollView hly_width]];
+            [self.footerView hly_setTop:bottom];
             
             UIEdgeInsets insets = self.scrollView.contentInset;
             if (self.headerView.state != HLYPullToRefreshStateLoading) {
@@ -322,7 +309,9 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
 #pragma mark - scroll view delegate
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
-    
+    if (self.scrollViewWillBeginDragging) {
+        self.scrollViewWillBeginDragging(scrollView);
+    }
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
@@ -340,6 +329,10 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
     }
     
     [self updateRefreshViewState];
+    
+    if (self.scrollViewDidScroll) {
+        self.scrollViewDidScroll(scrollView);
+    }
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
@@ -355,25 +348,26 @@ static CGFloat kHLYPullToRefreshFooterHeight = 60;
             insets.top = kHLYPullToRefreshHeaderHeight + self.viewTopLayoutGuide;
             [UIView animateWithDuration:0.25 animations:^{
                 self.scrollView.contentInset = insets;
+            } completion:^(BOOL finished) {
+                if (self.loadNew) {
+                    self.loadNew();
+                }
             }];
         }
-        if (self.loadNew) {
-            self.loadNew();
-        }
-    }
-    
-    if (!self.footerView.isHidden && self.footerView.state == HLYPullToRefreshStatePulling) {
+        
+    } else if (!self.footerView.isHidden && self.footerView.state == HLYPullToRefreshStatePulling) {
         self.footerView.state = HLYPullToRefreshStateLoading;
         if (self.scrollView) {
             UIEdgeInsets insets = self.scrollView.contentInset;
             insets.bottom = kHLYPullToRefreshHeaderHeight + self.viewBottomLayoutGuide;
             [UIView animateWithDuration:0.25 animations:^{
                 self.scrollView.contentInset = insets;
+            } completion:^(BOOL finished) {
+                if (self.loadMore) {
+                    self.loadMore();
+                }
             }];
             
-        }
-        if (self.loadMore) {
-            self.loadMore();
         }
     }
 }
