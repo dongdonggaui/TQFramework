@@ -1,9 +1,9 @@
 //
 //  NSString+Emoji.m
-//  laohu
+//  TQFramework
 //
 //  Created by huangluyang on 14/12/29.
-//  Copyright (c) 2014年 wanmei. All rights reserved.
+//  Copyright (c) 2014年 CTQ. All rights reserved.
 //
 
 #import "NSString+Emoji.h"
